@@ -1,8 +1,14 @@
 import Foundation
 import SourceKittenFramework
 
+internal enum Literal {
+    case string(String)
+    case integer(Int)
+    case variable(String)
+}
+
 internal indirect enum SyntaxTree {
-    case funcutionCall(BuiltinFunction, [String])
+    case funcutionCall(BuiltinFunction, [Literal])
     case literal(String)
     case addition(SyntaxTree, SyntaxTree)
     case subtraction(SyntaxTree, SyntaxTree)
@@ -66,7 +72,7 @@ internal struct Parser {
         return try decoder.decode([Substructure].self, from: data)
     }
     
-    func expandArgument(from substructure: Substructure, contents: String) -> [String] {
+    func expandArgument(from substructure: Substructure, contents: String) -> [Literal] {
         if substructure.kind != .call {
             fatalError("kind must be call")
         }
@@ -80,7 +86,9 @@ internal struct Parser {
 //            } ?? []
         let from = contents.index(contents.startIndex, offsetBy: substructure.bodyOffset!)
         let to = contents.index(from, offsetBy: substructure.bodyLength!)
-        return contents[from..<to].split(separator: ",").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+        return contents[from..<to].split(separator: ",")
+            .map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
+            .map { .string($0) }
     }
 
     private func parseLine(_ line: String) -> SyntaxTree {

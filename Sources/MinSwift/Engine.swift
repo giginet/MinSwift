@@ -11,14 +11,23 @@ public struct Engine {
             case .funcutionCall(let name, let arguments):
                 switch name {
                 case .print:
-                    return arguments.first!
-                default:
-                    fatalError("Unexpected function call \(name)")
+                    return expandVariable(arguments.first!)
                 }
             default:
                 return nil
             }
         }
         return exports.compactMap { $0 }.joined(separator: "\n")
+    }
+    
+    func expandVariable<T>(_ literal: Literal) -> T? {
+        switch literal {
+        case .string(let string):
+            return string as? T
+        case .integer(let int):
+            return int as? T
+        default:
+            fatalError("Not implemented")
+        }
     }
 }
