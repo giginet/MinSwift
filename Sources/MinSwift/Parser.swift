@@ -67,14 +67,17 @@ internal struct Parser {
         if substructure.kind != .call {
             fatalError("kind must be call")
         }
-        return substructure.substructures?.compactMap { argument in
-            if argument.kind == .argument {
-                let from = contents.index(contents.startIndex, offsetBy: argument.bodyOffset!)
-                let to = contents.index(from, offsetBy: argument.bodyLength!)
-                return String(contents[from..<to])
-            }
-            return nil
-            } ?? []
+//        return substructure.substructures?.compactMap { argument in
+//            if argument.kind == .argument {
+//                let from = contents.index(contents.startIndex, offsetBy: argument.bodyOffset!)
+//                let to = contents.index(from, offsetBy: argument.bodyLength!)
+//                return String(contents[from..<to])
+//            }
+//            return nil
+//            } ?? []
+        let from = contents.index(contents.startIndex, offsetBy: substructure.bodyOffset!)
+        let to = contents.index(from, offsetBy: substructure.bodyLength!)
+        return contents[from..<to].split(separator: ",").map { String($0).trimmingCharacters(in: .whitespacesAndNewlines) }
     }
 
     private func parseLine(_ line: String) -> SyntaxTree {
