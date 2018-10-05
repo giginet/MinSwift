@@ -37,12 +37,13 @@ internal struct Parser {
 
     func parse(_ contents: String) throws -> [SyntaxTree] {
         let substructures = try parseSubstructures(contents)
-        let tree = substructures.map { substructure -> SyntaxTree in
+        let tree = substructures.map { substructure -> SyntaxTree? in
             switch substructure.kind {
             case .function:
                 break
             case .call:
-                break
+                let arguments = expandArgument(from: substructure, contents: contents)
+                return .funcutionCall(substructure.name!, arguments)
             case .parameter:
                 break
             case .variable:
@@ -50,8 +51,8 @@ internal struct Parser {
             case .argument:
                 break
             }
-            return .literal("42")
-        }
+            return nil
+            }.compactMap { $0 }
         return tree
     }
     
