@@ -20,4 +20,14 @@ print(a)
         let substructures = try! parser.parse(contents)
         print(substructures)
     }
+    
+    func testExpandArguments() {
+        let contents =
+        """
+print(100, 200)
+"""
+        let substructures = try! parser.parseSubstructures(contents)
+        let arguments = parser.expandArgument(from: substructures.first!, contents: contents)
+        XCTAssertEqual(arguments, ["100", "200"])
+    }
 }

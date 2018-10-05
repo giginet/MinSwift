@@ -2,32 +2,34 @@ import Foundation
 import SourceKittenFramework
 
 internal indirect enum SyntaxTree {
-    case funcutionCall(String, [SyntaxTree])
+    case funcutionCall(String, [String])
     case literal(String)
     case addition(SyntaxTree, SyntaxTree)
     case subtraction(SyntaxTree, SyntaxTree)
 }
 
 internal struct Substructure: Codable {
-    enum Kind: String, Codable {
+    enum Kind: String, Codable, Equatable {
         case variable = "source.lang.swift.decl.var.global"
         case call = "source.lang.swift.expr.call"
         case function = "source.lang.swift.decl.function.free"
         case parameter = "source.lang.swift.decl.var.parameter"
+        case argument = "source.lang.swift.expr.argument"
     }
     
     enum CodingKeys: String, CodingKey {
         case kind = "key.kind"
         case name = "key.name"
         case substructures = "key.substructure"
+        case bodyLength = "key.bodylength"
+        case bodyOffset = "key.bodyoffset"
     }
     
     let kind: Kind
-    let name: String
+    let name: String?
     let substructures: [Substructure]?
-}
-
-internal struct ParseResult {
+    let bodyLength: Int?
+    let bodyOffset: Int?
 }
 
 internal struct Parser {
@@ -45,6 +47,8 @@ internal struct Parser {
                 break
             case .variable:
                 break
+            case .argument:
+                break
             }
             return .literal("42")
         }
@@ -56,6 +60,20 @@ internal struct Parser {
         let data = try JSONSerialization.data(withJSONObject: structure.dictionary["key.substructure"]!, options: [])
         let decoder = JSONDecoder()
         return try decoder.decode([Substructure].self, from: data)
+    }
+    
+    func expandArgument(from substructure: Substructure, contents: String) -> [String] {
+        if substructure.kind != .call {
+            fatalError("kind must be call")
+        }
+        return substructure.substructures?.compactMap { argument in
+            if argument.kind == .argument {
+                let from = contents.index(contents.startIndex, offsetBy: argument.bodyOffset!)
+                let to = contents.index(from, offsetBy: argument.bodyLength!)
+                return String(contents[from..<to])
+            }
+            return nil
+            } ?? []
     }
 
     private func parseLine(_ line: String) -> SyntaxTree {
