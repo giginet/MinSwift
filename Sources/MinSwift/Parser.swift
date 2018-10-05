@@ -1,4 +1,5 @@
 import Foundation
+import SourceKittenFramework
 
 internal indirect enum SyntaxTree {
     case funcutionCall(String, [SyntaxTree])
@@ -13,8 +14,9 @@ internal struct ParseResult {
 internal struct Parser {
     init() { }
 
-    func parse(_ string: String) -> [SyntaxTree] {
-        let statements = string.split(separator: "\n")
+    func parse(_ contents: String) -> [SyntaxTree] {
+        let statements = contents.split(separator: "\n")
+        let structure = try! Structure(file: File(contents: contents))
         return statements.map { parseLine(String($0)) }
     }
 
