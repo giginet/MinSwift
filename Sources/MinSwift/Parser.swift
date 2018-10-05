@@ -2,7 +2,7 @@ import Foundation
 import SourceKittenFramework
 
 internal indirect enum SyntaxTree {
-    case funcutionCall(String, [String])
+    case funcutionCall(BuiltinFunction, [String])
     case literal(String)
     case addition(SyntaxTree, SyntaxTree)
     case subtraction(SyntaxTree, SyntaxTree)
@@ -43,7 +43,10 @@ internal struct Parser {
                 break
             case .call:
                 let arguments = expandArgument(from: substructure, contents: contents)
-                return .funcutionCall(substructure.name!, arguments)
+                guard let functionName = substructure.name, let function = BuiltinFunction(rawValue: functionName) else {
+                    fatalError("function \(substructure.name!) is not defined.")
+                }
+                return .funcutionCall(function, arguments)
             case .parameter:
                 break
             case .variable:

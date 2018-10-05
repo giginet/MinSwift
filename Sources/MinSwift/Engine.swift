@@ -10,7 +10,7 @@ public struct Engine {
             switch tree {
             case .funcutionCall(let name, let arguments):
                 switch name {
-                case "print":
+                case .print:
                     return arguments.first!
                 default:
                     fatalError("Unexpected function call \(name)")
